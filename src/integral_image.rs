@@ -179,7 +179,10 @@ impl<T: Primitive + 'static> ArrayData for Luma<T> {
     }
 }
 
-impl<T: Primitive + 'static> ArrayData for Rgb<T> {
+impl<T: Primitive + 'static> ArrayData for Rgb<T>
+where
+    Rgb<T>: Pixel<Subpixel = T>,
+{
     type DataType = [T; 3];
 
     fn data(&self) -> Self::DataType {
@@ -195,7 +198,10 @@ impl<T: Primitive + 'static> ArrayData for Rgb<T> {
     }
 }
 
-impl<T: Primitive + 'static> ArrayData for Rgba<T> {
+impl<T: Primitive + 'static> ArrayData for Rgba<T>
+where
+    Rgba<T>: Pixel<Subpixel = T>,
+{
     type DataType = [T; 4];
 
     fn data(&self) -> Self::DataType {

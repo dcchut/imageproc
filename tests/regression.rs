@@ -17,7 +17,9 @@
 #[macro_use]
 extern crate imageproc;
 
-use image::{DynamicImage, GrayImage, ImageBuffer, Luma, Pixel, Rgb, RgbImage, Rgba, RgbaImage};
+use image::{
+    DynamicImage, GrayImage, ImageBuffer, Luma, PixelWithColorType, Rgb, RgbImage, Rgba, RgbaImage,
+};
 use imageproc::{
     definitions::{Clamp, HasBlack, HasWhite},
     edges::canny,
@@ -46,26 +48,26 @@ trait FromDynamic {
 
 impl FromDynamic for GrayImage {
     fn from_dynamic(image: &DynamicImage) -> Self {
-        image.to_luma()
+        image.to_luma8()
     }
 }
 
 impl FromDynamic for RgbImage {
     fn from_dynamic(image: &DynamicImage) -> Self {
-        image.to_rgb()
+        image.to_rgb8()
     }
 }
 
 impl FromDynamic for RgbaImage {
     fn from_dynamic(image: &DynamicImage) -> Self {
-        image.to_rgba()
+        image.to_rgba8()
     }
 }
 
 /// Loads an input image, applies a function to it and checks that the result matches a 'truth' image.
 fn compare_to_truth<P, F>(input_file_name: &str, truth_file_name: &str, op: F)
 where
-    P: Pixel<Subpixel = u8> + 'static,
+    P: PixelWithColorType<Subpixel = u8> + 'static,
     ImageBuffer<P, Vec<u8>>: FromDynamic,
     F: Fn(&ImageBuffer<P, Vec<u8>>) -> ImageBuffer<P, Vec<u8>>,
 {
@@ -80,7 +82,7 @@ fn compare_to_truth_with_tolerance<P, F>(
     op: F,
     tol: u8,
 ) where
-    P: Pixel<Subpixel = u8> + 'static,
+    P: PixelWithColorType<Subpixel = u8> + 'static,
     ImageBuffer<P, Vec<u8>>: FromDynamic,
     F: Fn(&ImageBuffer<P, Vec<u8>>) -> ImageBuffer<P, Vec<u8>>,
 {
@@ -94,7 +96,7 @@ fn compare_to_truth_with_tolerance<P, F>(
 /// Checks that an image matches a 'truth' image.
 fn compare_to_truth_image<P>(actual: &ImageBuffer<P, Vec<u8>>, truth_file_name: &str)
 where
-    P: Pixel<Subpixel = u8> + 'static,
+    P: PixelWithColorType<Subpixel = u8> + 'static,
     ImageBuffer<P, Vec<u8>>: FromDynamic,
 {
     compare_to_truth_image_with_tolerance(actual, truth_file_name, 0u8);
@@ -106,7 +108,7 @@ fn compare_to_truth_image_with_tolerance<P>(
     truth_file_name: &str,
     tol: u8,
 ) where
-    P: Pixel<Subpixel = u8> + 'static,
+    P: PixelWithColorType<Subpixel = u8> + 'static,
     ImageBuffer<P, Vec<u8>>: FromDynamic,
 {
     if should_regenerate() {
@@ -323,7 +325,7 @@ fn test_sharpen_gaussian() {
 #[test]
 fn test_match_histograms() {
     fn match_to_zebra_histogram(image: &GrayImage) -> GrayImage {
-        let zebra = load_image_or_panic(Path::new(INPUT_DIR).join("zebra.png")).to_luma();
+        let zebra = load_image_or_panic(Path::new(INPUT_DIR).join("zebra.png")).to_luma8();
         imageproc::contrast::match_histogram(image, &zebra)
     }
     compare_to_truth(
